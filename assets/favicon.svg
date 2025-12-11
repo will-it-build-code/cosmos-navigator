@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <radialGradient id="sun" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#ffdd44"/>
+      <stop offset="70%" style="stop-color:#ff8800"/>
+      <stop offset="100%" style="stop-color:#ff4400"/>
+    </radialGradient>
+    <radialGradient id="space" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#0a0a1a"/>
+      <stop offset="100%" style="stop-color:#000000"/>
+    </radialGradient>
+  </defs>
+  <!-- Background -->
+  <circle cx="50" cy="50" r="50" fill="url(#space)"/>
+  <!-- Sun -->
+  <circle cx="50" cy="50" r="18" fill="url(#sun)"/>
+  <!-- Orbit rings -->
+  <circle cx="50" cy="50" r="28" fill="none" stroke="#ffffff" stroke-width="0.5" opacity="0.3"/>
+  <circle cx="50" cy="50" r="38" fill="none" stroke="#ffffff" stroke-width="0.5" opacity="0.2"/>
+  <!-- Planet -->
+  <circle cx="78" cy="50" r="5" fill="#4488ff"/>
+  <!-- Stars -->
+  <circle cx="15" cy="20" r="1" fill="#ffffff" opacity="0.8"/>
+  <circle cx="85" cy="15" r="0.8" fill="#ffffff" opacity="0.6"/>
+  <circle cx="25" cy="80" r="0.8" fill="#ffffff" opacity="0.7"/>
+  <circle cx="90" cy="75" r="1" fill="#ffffff" opacity="0.5"/>
+</svg>

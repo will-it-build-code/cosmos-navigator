@@ -1,0 +1,281 @@
+{
+  "project": {
+    "name": "Cosmos Navigator",
+    "path": "/Users/connahpatilla/Documents/Claude-capitol-club/vscode-projects/competition/claude/solar-system/",
+    "stack": ["Electron", "Three.js", "TypeScript", "Vite"],
+    "run_command": "npm run electron:dev"
+  },
+
+  "context": {
+    "summary": "A 3D solar system explorer app. Another Claude instance performed a comprehensive code review and identified numerous issues. Some fixes were attempted but broke rendering (planets became invisible). We've since fixed the visibility issue by restoring emissive properties to materials. Two critical issues remain unfixed, plus numerous polish items from the original review.",
+    "recent_changes": {
+      "Planet.ts": "Added emissive and emissiveIntensity (0.06) to planetMaterial. Added emissiveMap when textures load.",
+      "Moon.ts": "Added emissive and emissiveIntensity (0.05) to moonMaterial. Added emissiveMap when textures load.",
+      "Scene.ts": "Increased ambient light intensity from 0.25 to 0.4, hemisphere light from 0.2 to 0.25"
+    }
+  },
+
+  "critical_fixes": [
+    {
+      "id": "FIX-001",
+      "priority": "CRITICAL",
+      "title": "Textures Not Loading",
+      "description": "Planet and moon textures from the CDN are not appearing. Planets show only their fallback colors (the emissive glow we added). Need to diagnose why textures fail and implement robust fallback.",
+      "current_behavior": "Planets visible but untextured (solid colored spheres)",
+      "expected_behavior": "Planets should display high-resolution surface textures",
+      "affected_files": [
+        "src/bodies/Planet.ts",
+        "src/bodies/Moon.ts",
+        "src/bodies/SolarSystemBuilder.ts"
+      ],
+      "texture_source": {
+        "base_url": "https://www.solarsystemscope.com/textures/download/",
+        "example_urls": [
+          "https://www.solarsystemscope.com/textures/download/2k_earth_daymap.jpg",
+          "https://www.solarsystemscope.com/textures/download/2k_moon.jpg"
+        ]
+      },
+      "diagnosis_steps": [
+        "1. Open DevTools (Cmd+Option+I) and check Console for texture loading errors",
+        "2. Check Network tab for failed requests to solarsystemscope.com",
+        "3. Verify CORS headers if requests are being blocked",
+        "4. Check if texture URLs are correctly constructed in SolarSystemBuilder.ts"
+      ],
+      "potential_causes": [
+        "CORS blocking in Electron renderer process",
+        "CDN rate limiting or blocking automated requests",
+        "Incorrect URL construction",
+        "Race condition: textures loading after material is set but needsUpdate not triggering re-render",
+        "Texture loader not properly awaited"
+      ],
+      "solution_options": [
+        {
+          "option": "A",
+          "name": "Fix CDN Loading",
+          "description": "Debug and fix the current CDN loading mechanism",
+          "steps": [
+            "Add detailed console.log statements in loadTextures methods",
+            "Verify texture URLs are correct",
+            "Ensure needsUpdate = true is called after texture assignment",
+            "Add error handling that logs the actual error, not just 'failed to load'"
+          ]
+        },
+        {
+          "option": "B",
+          "name": "Local Texture Fallback",
+          "description": "Download textures locally and use them as primary or fallback",
+          "steps": [
+            "Run existing scripts/download-textures.js or create new download script",
+            "Store textures in assets/textures/",
+            "Modify texture loading to try local first, then CDN",
+            "Update .gitignore if needed for large texture files"
+          ]
+        },
+        {
+          "option": "C",
+          "name": "Alternative CDN",
+          "description": "Use a more reliable texture source",
+          "alternative_sources": [
+            "NASA's official texture maps (public domain)",
+            "Planet Pixel Emporium textures",
+            "Self-hosted on GitHub releases or similar"
+          ]
+        }
+      ],
+      "recommended_solution": "Option B - Local textures are more reliable for an Electron app. CDN dependency is fragile."
+    },
+    {
+      "id": "FIX-002", 
+      "priority": "CRITICAL",
+      "title": "Moons Toggle Not Working",
+      "description": "The 'Moons' toggle in Settings panel does nothing. Moons visibility is incorrectly tied to the 'Labels' toggle instead.",
+      "current_behavior": "Toggling 'Moons' in settings has no effect. Moons appear/disappear with 'Labels' toggle.",
+      "expected_behavior": "Moons toggle should show/hide all moon objects independently of labels.",
+      "affected_files": [
+        "src/ui/UIManager.ts",
+        "src/ui/SettingsPanel.ts",
+        "src/bodies/SolarSystemBuilder.ts"
+      ],
+      "diagnosis": {
+        "UIManager_line_106": "The listener is correctly set up: this.settingsPanel.onSettingChange('showMoons', (value) => { this.solarSystem.setMoonsVisible(value as boolean); });",
+        "likely_issue": "SolarSystemBuilder.setMoonsVisible() method may not exist or may not be implemented correctly"
+      },
+      "solution_steps": [
+        "1. Check if SolarSystemBuilder has setMoonsVisible() method",
+        "2. If missing, implement it to iterate through all moons and set their visibility",
+        "3. Ensure moon groups are properly tagged/named for identification",
+        "4. Verify the method actually toggles THREE.Object3D.visible property"
+      ],
+      "implementation_hint": {
+        "method_signature": "setMoonsVisible(visible: boolean): void",
+        "logic": "Iterate through all celestial bodies, find those of type 'moon', and set their group.visible = visible"
+      }
+    }
+  ],
+
+  "polish_fixes": [
+    {
+      "id": "FIX-003",
+      "priority": "HIGH",
+      "title": "Sun Rotation Direction Mismatch",
+      "description": "Sun surface and corona rotate in opposite directions, which looks unnatural.",
+      "file": "src/bodies/Sun.ts",
+      "current_code_pattern": "corona.rotation.y -= delta AND mesh.rotation.y += delta",
+      "fix": "Make both rotate in the same direction (both += or both -=)"
+    },
+    {
+      "id": "FIX-004",
+      "priority": "HIGH",
+      "title": "Add No-Results Feedback to Search",
+      "description": "When searching for a body that doesn't exist, there's no feedback to the user.",
+      "file": "src/ui/SearchBar.ts",
+      "fix": "Add a 'No results found' message when search returns empty results"
+    },
+    {
+      "id": "FIX-005",
+      "priority": "MEDIUM",
+      "title": "Division by Zero Risk in OrbitalMechanics",
+      "description": "If semiMajorAxis is 0, calculations will fail.",
+      "file": "src/bodies/OrbitalMechanics.ts",
+      "fix": "Add guard clause: if (semiMajorAxis <= 0) return fallback position or throw meaningful error"
+    },
+    {
+      "id": "FIX-006",
+      "priority": "MEDIUM",
+      "title": "Type Safety - Remove Window Cast Hack",
+      "description": "Code uses unsafe cast: (window as unknown as { cosmosApp: CosmosApp })",
+      "file": "src/main.ts",
+      "fix": "Declare proper global type or use a singleton pattern for app instance access"
+    },
+    {
+      "id": "FIX-007",
+      "priority": "MEDIUM",
+      "title": "Dead Code - hasNightLights Never Used",
+      "description": "Planet config has hasNightLights property that is set but never read.",
+      "file": "src/bodies/Planet.ts",
+      "fix": "Either implement night lights feature (city lights on Earth's dark side) or remove the property"
+    },
+    {
+      "id": "FIX-008",
+      "priority": "LOW",
+      "title": "Magic Numbers Throughout Codebase",
+      "description": "Numbers like 500000, 3000, 15 appear without semantic meaning.",
+      "affected_files": ["Multiple files"],
+      "fix": "Extract to named constants in a constants.ts file, e.g., ASTEROID_COUNT = 3000, SUN_VISUAL_RADIUS = 15"
+    },
+    {
+      "id": "FIX-009",
+      "priority": "LOW",
+      "title": "Starfield Lacks Visual Variety",
+      "description": "All stars are uniform white points. Real stars have color temperature variation based on stellar classification.",
+      "file": "src/engine/Scene.ts",
+      "fix": "Add slight color variation to star points (blue-white for hot stars, yellow for sun-like, red for cool stars)"
+    },
+    {
+      "id": "FIX-010",
+      "priority": "LOW",
+      "title": "Missing Mac App Icon",
+      "description": "No icon at assets/icon.icns for macOS app bundle.",
+      "fix": "Create or source an appropriate .icns file for the app"
+    },
+    {
+      "id": "FIX-011",
+      "priority": "LOW",
+      "title": "Electron Version Not Pinned",
+      "description": "package.json uses ^ for Electron version which could cause breaking changes on install.",
+      "file": "package.json",
+      "fix": "Change from ^x.x.x to exact version x.x.x for Electron dependency"
+    }
+  ],
+
+  "future_enhancements": [
+    {
+      "id": "ENH-001",
+      "title": "Frustum Culling for Asteroids",
+      "description": "3000 asteroids render every frame regardless of visibility. Implement frustum culling to skip off-screen asteroids.",
+      "performance_impact": "HIGH"
+    },
+    {
+      "id": "ENH-002", 
+      "title": "LOD System for Planets",
+      "description": "Use lower polygon spheres for distant planets, higher detail when close.",
+      "performance_impact": "MEDIUM"
+    },
+    {
+      "id": "ENH-003",
+      "title": "Label Update Throttling",
+      "description": "Labels currently update every frame with 3D-to-2D projection. Throttle to every 2-3 frames or only when camera moves significantly.",
+      "performance_impact": "MEDIUM",
+      "note": "Some throttling was added but may need tuning"
+    },
+    {
+      "id": "ENH-004",
+      "title": "State Persistence",
+      "description": "Save camera position, time, and settings to localStorage so they persist across reloads.",
+      "user_experience_impact": "HIGH"
+    },
+    {
+      "id": "ENH-005",
+      "title": "Touch Controls",
+      "description": "Touch control stubs exist but are not implemented. Needed for tablet/mobile use.",
+      "file": "src/controls/TouchControls.ts"
+    },
+    {
+      "id": "ENH-006",
+      "title": "Accessibility",
+      "description": "No ARIA labels, keyboard-only navigation incomplete. Screen reader users cannot use the app.",
+      "compliance": "WCAG 2.1"
+    },
+    {
+      "id": "ENH-007",
+      "title": "Saturn Ring Shadows",
+      "description": "Saturn's rings should cast shadows on the planet surface. Currently they don't.",
+      "file": "src/bodies/Planet.ts or dedicated RingSystem.ts"
+    }
+  ],
+
+  "file_reference": {
+    "key_files": {
+      "entry_point": "src/main.ts",
+      "planet_rendering": "src/bodies/Planet.ts",
+      "moon_rendering": "src/bodies/Moon.ts",
+      "sun_rendering": "src/bodies/Sun.ts",
+      "scene_lighting": "src/engine/Scene.ts",
+      "solar_system_builder": "src/bodies/SolarSystemBuilder.ts",
+      "orbital_mechanics": "src/bodies/OrbitalMechanics.ts",
+      "ui_manager": "src/ui/UIManager.ts",
+      "settings_panel": "src/ui/SettingsPanel.ts",
+      "search_bar": "src/ui/SearchBar.ts",
+      "camera_controller": "src/controls/CameraController.ts"
+    },
+    "texture_script": "scripts/download-textures.js",
+    "assets_directory": "assets/"
+  },
+
+  "testing_checklist": [
+    "[ ] All planets visible with textures",
+    "[ ] All moons visible with textures", 
+    "[ ] Moons toggle shows/hides moons independently",
+    "[ ] Labels toggle only affects labels",
+    "[ ] Orbit lines toggle works",
+    "[ ] Asteroid belt toggle works",
+    "[ ] Atmospheres toggle works",
+    "[ ] Time controls work (play/pause/speed)",
+    "[ ] Search finds bodies and navigates camera",
+    "[ ] Search shows 'no results' for invalid queries",
+    "[ ] Free roam mode works (WASD, mouse look)",
+    "[ ] Orbit mode works (click planet, orbit around it)",
+    "[ ] Mode indicator updates correctly",
+    "[ ] No console errors during normal use",
+    "[ ] FPS stays above 30 on typical hardware"
+  ],
+
+  "execution_order": [
+    "1. FIX-001: Fix textures (CRITICAL - most visible issue)",
+    "2. FIX-002: Fix moons toggle (CRITICAL - broken UI)",
+    "3. FIX-003: Sun rotation (quick fix, improves polish)",
+    "4. FIX-004: Search feedback (quick UX win)",
+    "5. Run through testing checklist",
+    "6. Address remaining polish fixes as time allows"
+  ]
+}
