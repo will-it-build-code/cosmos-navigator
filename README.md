@@ -1,9 +1,10 @@
 # Cosmos Navigator
 
-A stunning, scientifically accurate 3D Solar System explorer built as a macOS Electron desktop application.
+A stunning, scientifically accurate 3D Solar System explorer.
 
-![Cosmos Navigator](https://img.shields.io/badge/Platform-macOS-blue)
-![Electron](https://img.shields.io/badge/Electron-28.x-47848F)
+## 🚀 [Live Demo](https://cosmos-navigator.will-it-build.com)
+
+![Cosmos Navigator](https://img.shields.io/badge/Platform-Web-green)
 ![Three.js](https://img.shields.io/badge/Three.js-0.160-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6)
 
@@ -47,26 +48,23 @@ A stunning, scientifically accurate 3D Solar System explorer built as a macOS El
 - **Settings** - Toggle orbits, atmospheres, quality presets
 - **Educational Content** - Descriptions from NASA data
 
-## Installation
+## Local Development
 
 ### Prerequisites
-- Node.js 18+ (or 20+)
+- Node.js 18+
 - npm 9+
-- macOS 10.15 Catalina or later
 
 ### Setup
 ```bash
 # Clone the repository
-cd solar-system
+git clone https://github.com/will-it-build-code/cosmos-navigator.git
+cd cosmos-navigator/solar-system
 
 # Install dependencies
 npm install
 
 # Start development server
-npm run electron:dev
-
-# Or build for production
-npm run electron:build
+npm run dev
 ```
 
 ## Controls
@@ -120,7 +118,6 @@ src/
 
 ## Tech Stack
 
-- **Electron** - Native macOS desktop app
 - **Vite** - Fast development and bundling
 - **Three.js** - 3D rendering engine
 - **TypeScript** - Type-safe development
@@ -133,21 +130,6 @@ src/
 - **Physical Data**: [NASA Planetary Fact Sheets](https://nssdc.gsfc.nasa.gov/planetary/factsheet/)
 - **Textures**: [Solar System Scope](https://www.solarsystemscope.com/textures/)
 
-## Performance
-
-- **Target**: 60 FPS at 1080p
-- **Optimization**: Instanced rendering, LOD-ready
-- **GPU**: Requires Metal-compatible GPU
-
-## Future Enhancements
-
-- [ ] Comet tail particle effects
-- [ ] Spacecraft trajectory visualization
-- [ ] Guided tours
-- [ ] Mini-map overview
-- [ ] Audio ambiance
-- [ ] VR support
-
 ## License
 
 MIT License - See LICENSE file for details.
@@ -157,8 +139,7 @@ MIT License - See LICENSE file for details.
 - NASA/JPL for astronomical data
 - Solar System Scope for planet textures
 - Three.js community for rendering excellence
-- Electron team for the desktop framework
 
 ---
 
-**Cosmos Navigator** - Explore the wonders of our solar system from your desktop.
+**Cosmos Navigator** - Explore the wonders of our solar system.
